@@ -1,0 +1,55 @@
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachine
+metadata:
+  creationTimestamp: null
+  labels:
+    kubevirt.io/vm: vm-ubuntu-datavolume
+  name: vm-ubuntu-datavolume
+spec:
+  dataVolumeTemplates:
+  - metadata:
+      creationTimestamp: null
+      name: ubuntu-dv
+    spec:
+      pvc:
+        volumeMode: Block
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 3G
+        storageClassName: rook-ceph-block
+      source:
+        http:
+          url: http://172.17.0.1/bionic-server-cloudimg-amd64.img
+  running: false
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-datavolume
+    spec:
+      domain:
+        devices:
+          disks:
+          - disk:
+              bus: virtio
+            name: datavolumevolume
+          - disk:
+              bus: virtio
+            name: cloudinit
+        machine:
+          type: ""
+        resources:
+          requests:
+            memory: 4G
+      terminationGracePeriodSeconds: 0
+      volumes:
+      - dataVolume:
+          name: ubuntu-dv
+        name: datavolumevolume
+      - cloudInitNoCloud:
+          userData: |
+            password: password
+            chpasswd: { expire: False }
+        name: cloudinit
+

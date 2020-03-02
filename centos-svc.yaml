@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: centos-dv-svc
+spec:
+  ports:
+  - port: 22
+    targetPort: 22
+    name: ssh
+  - port: 80
+    targetPort: 80
+    name: http
+  selector:
+    kubevirt.io/vm: centos-datavolume
+  type: NodePort

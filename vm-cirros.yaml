@@ -1,0 +1,55 @@
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachine
+metadata:
+  creationTimestamp: null
+  labels:
+    kubevirt.io/vm: vm-cirros-datavolume
+  name: vm-cirros-datavolume
+spec:
+  dataVolumeTemplates:
+  - metadata:
+      creationTimestamp: null
+      name: cirros-dv
+    spec:
+      pvc:
+        volumeMode: Block
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 3G
+        storageClassName: rook-ceph-block
+      source:
+        http:
+          url: http://172.17.0.1/cirros-0.4.0-x86_64-disk.img
+  running: false
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: vm-datavolume
+    spec:
+      domain:
+        devices:
+          disks:
+          - disk:
+              bus: virtio
+            name: datavolumevolume
+          - disk:
+              bus: virtio
+            name: cloudinit
+        machine:
+          type: ""
+        resources:
+          requests:
+            memory: 2G
+      terminationGracePeriodSeconds: 0
+      volumes:
+      - dataVolume:
+          name: cirros-dv
+        name: datavolumevolume
+      - cloudInitNoCloud:
+          userData: |
+            password: password
+            chpasswd: { expire: False }
+        name: cloudinit
+
